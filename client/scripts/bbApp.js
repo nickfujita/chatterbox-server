@@ -20,13 +20,14 @@ var Messages = Backbone.Collection.extend({
   model: Message,
 
   //url to which we want to make the API call
-  url: 'http://127.0.0.1:3000/classes/messages',
+  url: 'http://mysterious-sierra-2386.herokuapp.com/classes/messages',
+  // url: 'http://127.0.0.1:3000/classes/messages',
   // url: 'https://api.parse.com/1/classes/chatterbox',
 
   initialize: function() {
 
     this.listenTo(this,'changingRoom',this.getRoomMessages),
-    this.host = 'http://127.0.0.1:3000/classes/'
+    this.host = 'http://mysterious-sierra-2386.herokuapp.com/classes/'
 
   },
 
