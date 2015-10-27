@@ -12,7 +12,7 @@ var db = monk(url);
 //init express app
 var app = express();
 
-var port = process.env.PORT || 3000;
+// var port = process.env.PORT || 5000;
 
 //use morgan logging tool, will spit out a log of actions on server
 app.use(morgan('dev'));
@@ -69,7 +69,9 @@ app.post('/classes/:room', function(req, res) {
 	res.send('added '+newMessage);
 });
 
-app.listen(port);
+// app.listen(port);
+
+app.listen(process.env.PORT || 5000);
 
 
 
