@@ -1,116 +1,105 @@
-var express = require('express');
-var bodyParser = require('body-parser');
-var morgan = require('morgan');
-var path = require('path');
-var messageHandler = require('./server/messageHandler.js');
-var monk = require('monk');
+var cluster = require('cluster');
 
-//init the connection to mongolabs via monk
-var url = 'mongodb://chatterAdmin:chadmin@ds045664.mongolab.com:45664/chatterbox';
-var db = monk(url);
+// Code to run if we're in the master process
+if (cluster.isMaster) {
 
-//init express app
-var app = express();
+    // Count the machine's CPUs
+    var cpuCount = require('os').cpus().length;
 
-// var port = process.env.PORT || 5000;
+    // Create a worker for each CPU
+    for (var i = 0; i < cpuCount; i += 1) {
+        cluster.fork();
+    }
 
-//use morgan logging tool, will spit out a log of actions on server
-app.use(morgan('dev'));
+} else {
 
-//easy way to parse the body sent in with a request in json form
-app.use(bodyParser.json());
-
-app.use(function(req,res,next) {
-	req.db = db;
-	next();
-});
-
-app.use(express.static('client'));
+	var express = require('express');
+	var bodyParser = require('body-parser');
+	var morgan = require('morgan');
+	var path = require('path');
+	var messageHandler = require('./server/messageHandler.js');
+	var monk = require('monk');
 
 
-app.get('/', function (req, res) {
-  res.sendFile(path.join(__dirname + '/index.html'));
-});
+	//init the connection to mongolabs via monk
+	var url = 'mongodb://chatterAdmin:chadmin@ds045664.mongolab.com:45664/chatterbox';
+	var db = monk(url);
 
-app.get('/classes/messages', function(req, res) {
-	
-	var collection = req.db.get('messages');
+	//init express app
+	var app = express();
 
-	collection.find({},{},function(e,doc) {
-	
-		var toSend = {'results':doc};
+	// var port = process.env.PORT || 5000;
 
-		res.send(toSend);
+	//use morgan logging tool, will spit out a log of actions on server
+	app.use(morgan('dev'));
+
+	//easy way to parse the body sent in with a request in json form
+	app.use(bodyParser.json());
+
+	app.use(function(req,res,next) {
+		req.db = db;
+		next();
 	});
 
-});
+	app.use(express.static('client'));
 
-app.get('/classes/:room', function(req, res) {
-	var collection = req.db.get('messages');
 
-	collection.find({roomname:req.params.room},{},function(e,doc) {
-	
-		var toSend = {'results':doc};
-
-		res.send(toSend);
+	app.get('/', function (req, res) {
+	  res.sendFile(path.join(__dirname + '/index.html'));
 	});
-});
 
-app.post('/classes/messages', function(req, res) {
+	app.get('/classes/messages', function(req, res) {
+		
+		var collection = req.db.get('messages');
 
-	var collection = req.db.get('messages');
+		collection.find({},{},function(e,doc) {
+		
+			var toSend = {'results':doc};
 
-	// messageHandler.insertNewMessage(req.body);
+			res.send(toSend);
+		});
 
-	var content = messageHandler.formatMessage(req.body);
+	});
 
-	collection.insert(content);
+	app.get('/classes/:room', function(req, res) {
+		var collection = req.db.get('messages');
 
-	res.send('added '+JSON.stringify(req.body));
-});
+		collection.find({roomname:req.params.room},{},function(e,doc) {
+		
+			var toSend = {'results':doc};
 
-app.post('/classes/:room', function(req, res) {
-	var newMessage = req.body;
-	newMessage['roomname'] = req.params.room;
+			res.send(toSend);
+		});
+	});
 
-	var collection = req.db.get('messages');
+	app.post('/classes/messages', function(req, res) {
 
-	var content = messageHandler.formatMessage(newMessage);
+		var collection = req.db.get('messages');
 
-	collection.insert(content);
+		// messageHandler.insertNewMessage(req.body);
 
-	res.send('added '+newMessage);
-});
+		var content = messageHandler.formatMessage(req.body);
 
-// app.listen(port);
+		collection.insert(content);
 
-app.listen(process.env.PORT || 5000);
+		res.send('added '+JSON.stringify(req.body));
+	});
 
+	app.post('/classes/:room', function(req, res) {
+		var newMessage = req.body;
+		newMessage['roomname'] = req.params.room;
 
+		var collection = req.db.get('messages');
 
+		var content = messageHandler.formatMessage(newMessage);
 
+		collection.insert(content);
 
+		res.send('added '+newMessage);
+	});
 
+	// app.listen(port);
 
+	app.listen(process.env.PORT || 5000);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+}
