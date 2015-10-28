@@ -1,19 +1,19 @@
-// var cluster = require('cluster');
+var cluster = require('cluster');
 
-// // Code to run if we're in the master process
-// if (cluster.isMaster) {
+// Code to run if we're in the master process
+if (cluster.isMaster) {
 
-//     // Count the machine's CPUs
-//     var cpuCount = require('os').cpus().length;
+    // Count the machine's CPUs
+    var cpuCount = require('os').cpus().length;
 
-//     console.log('clusters: '+require('os').cpus().length);
+    console.log('clusters: '+require('os').cpus().length);
 
-//     // Create a worker for each CPU
-//     for (var i = 0; i < cpuCount; i += 1) {
-//         cluster.fork();
-//     }
+    // Create a worker for each CPU
+    for (var i = 0; i < cpuCount; i += 1) {
+        cluster.fork();
+    }
 
-// } else {
+} else {
 
 	var express = require('express');
 	var bodyParser = require('body-parser');
@@ -104,4 +104,4 @@
 
 	app.listen(process.env.PORT || 5000);
 
-// }
+}
