@@ -46,7 +46,14 @@ app.get('/classes/messages', function(req, res) {
 });
 
 app.get('/classes/:room', function(req, res) {
-	res.send(messageHandler.getMessages(req.params.room));
+	var collection = req.db.get('messages');
+
+	collection.find({roomname:req.params.room},{},function(e,doc) {
+	
+		var toSend = {'results':doc};
+
+		res.send(toSend);
+	});
 });
 
 app.post('/classes/messages', function(req, res) {
@@ -65,7 +72,13 @@ app.post('/classes/messages', function(req, res) {
 app.post('/classes/:room', function(req, res) {
 	var newMessage = req.body;
 	newMessage['roomname'] = req.params.room;
-	messageHandler.insertNewMessage(newMessage);
+
+	var collection = req.db.get('messages');
+
+	var content = messageHandler.formatMessage(newMessage);
+
+	collection.insert(content);
+
 	res.send('added '+newMessage);
 });
 
